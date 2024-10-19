@@ -18,6 +18,14 @@ resource "azurerm_mssql_database" "this" {
   max_size_gb = 2
 }
 
+resource "azurerm_sql_firewall_rule" "allow_my_ip" {
+  name                = "AllowMyIP"
+  resource_group_name = azurerm_mssql_server.this.resource_group_name
+  server_name         = azurerm_mssql_server.this.name
+  start_ip_address    = data.http.my_ip.body
+  end_ip_address      = data.http.my_ip.body
+}
+
 /*
 resource "azurerm_private_endpoint" "this" {
   name                = "${local.name}-endpoint"

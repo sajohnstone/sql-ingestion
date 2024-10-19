@@ -15,7 +15,7 @@ RESET=$(shell tput sgr0)
 VENV_DIR = venv
 PYTHON = python3
 PIP = $(VENV_DIR)/bin/pip
-SCRIPT = ./data/import.py
+SCRIPT = ./import.py
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -70,7 +70,7 @@ setup: ## Set up Python virtual environment and install dependencies.
 	@echo "Setting up the Python virtual environment..."
 	$(PYTHON) -m venv $(VENV_DIR)
 	@echo "Installing dependencies..."
-	$(PIP) install pandas pyodbc
+	$(PIP) install pandas pyodbc python-dotenv tqdm
 
 run: setup ## Run the data import script.
 	@echo "Running the import script..."

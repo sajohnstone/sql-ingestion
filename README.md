@@ -4,6 +4,15 @@ How to ingest data from SQL server into Databricks.  This repo will look at a fe
  - Streaming: Using streaming to get data into to DBX
  - MERGE INTO: Using MERGE into and the JDBC driver (note this is not recommended at scale)
 
+## Requirements
+For using the ODBC you might need to install it
+```bash
+brew install unixodbc
+brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
+brew update
+brew install msodbcsql17
+```
+
 ## Getting the data
 I am using the classic NYC taxi dataset as it contains plenty of rows (https://www.kaggle.com/datasets/diishasiing/revenue-for-cab-drivers).  To get started download this to the ./data folder.
 
