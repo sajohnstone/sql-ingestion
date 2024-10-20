@@ -15,7 +15,7 @@ RESET=$(shell tput sgr0)
 VENV_DIR = venv
 PYTHON = python3
 PIP = $(VENV_DIR)/bin/pip
-SCRIPT = ./import.py
+MAX_RECORDS=1000  # Default value; can be overridden
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -74,4 +74,8 @@ setup: ## Set up Python virtual environment and install dependencies.
 
 run: setup ## Run the data import script.
 	@echo "Running the import script..."
-	$(VENV_DIR)/bin/$(PYTHON) $(SCRIPT)
+	$(VENV_DIR)/bin/$(PYTHON) ./scripts/import.py --max_records=$(MAX_RECORDS)
+
+simulate: setup ## Run the data import script.
+	@echo "Running the simulate script..."
+	$(VENV_DIR)/bin/$(PYTHON) ./scripts/simulate_workload.py

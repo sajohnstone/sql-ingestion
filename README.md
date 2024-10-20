@@ -4,6 +4,26 @@ How to ingest data from SQL server into Databricks.  This repo will look at a fe
  - Streaming: Using streaming to get data into to DBX
  - MERGE INTO: Using MERGE into and the JDBC driver (note this is not recommended at scale)
 
+
+## CDC
+For this we will use the CDC data and using ADF to read this data and write it to Parquet files on a storage account, then Databrick will stream or batch this in via Autoloader.
+
+SQL >> ADF >> Storage Account >> DBX Job >> Autoloader >> Delta Table
+
+NOTE: In this example we've used triggers to simulated CDC data.  This is in order to keep the cost for running this to a minimim.  In the real-world you can use Azure SQL with a P1 licence and enable CDC.
+
+```sql
+-- Enable CDC on the database
+EXEC sys.sp_cdc_enable_db;
+-- Enable CDC on a specific table
+EXEC sys.sp_cdc_enable_table
+    @source_schema = 'dbo',          -- Schema of the source table
+    @source_name = 'YourTableName',  -- Name of the source table
+    @role_name = NULL;                -- Optional role name for permissions
+```
+
+
+
 ## Requirements
 For using the ODBC you might need to install it
 ```bash

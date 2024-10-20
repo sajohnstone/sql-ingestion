@@ -5,9 +5,16 @@ import sys
 import time
 from dotenv import load_dotenv
 from tqdm import tqdm  # Import tqdm for the progress bar
+import argparse  # Import argparse for command-line arguments
+
+# Argument parser setup
+parser = argparse.ArgumentParser(description='Import data into SQL Server.')
+parser.add_argument('--max_records', type=int, help='Maximum number of records to import', default=None)
+
+args = parser.parse_args()
 
 # Path to your .env file
-env_path = "dev.env"
+env_path = "./dev.env"
 data_file_path = './data/data.csv'
 
 # Sense checks
@@ -53,43 +60,53 @@ def connect_to_db():
 conn = connect_to_db()
 cursor = conn.cursor()
 
-# Create the table if it doesn't exist
-create_table_query = """
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='TaxiData' AND xtype='U')
-CREATE TABLE TaxiData (
-    VendorID INT,
-    tpep_pickup_datetime DATETIME,
-    tpep_dropoff_datetime DATETIME,
-    passenger_count INT,
-    trip_distance FLOAT,
-    RatecodeID INT,
-    store_and_fwd_flag CHAR(1),
-    PULocationID INT,
-    DOLocationID INT,
-    payment_type INT,
-    fare_amount FLOAT,
-    extra FLOAT,
-    mta_tax FLOAT,
-    tip_amount FLOAT,
-    tolls_amount FLOAT,
-    improvement_surcharge FLOAT,
-    total_amount FLOAT,
-    congestion_surcharge FLOAT
-);
-"""
-cursor.execute(create_table_query)
-conn.commit()
+# Function to read SQL from a file
+def read_sql_file(file_path):
+    """Read SQL commands from a file and split by GO."""
+    with open(file_path, 'r') as file:
+        sql_script = file.read()
+    
+    # Split the SQL script by 'GO' keyword (case-insensitive and ensuring it works for multiple spaces/newlines)
+    sql_commands = [cmd.strip() for cmd in sql_script.split('GO') if cmd.strip()]
+    return sql_commands
+
+# Execute each SQL command separately
+def execute_sql_commands(commands, cursor, conn):
+    for command in commands:
+        try:
+            print("**** Executing ****")
+            print(f"{command.splitlines()[0]}")
+            cursor.execute(command)
+            conn.commit()  # Commit after each command
+            print("**** Command complete ****")
+        except Exception as e:
+            print("**** Command failed ****")
+            print("**** ERROR ****")
+            print(f"Error: {str(e)}")
+            print("**** END OF ERROR ****")
+            conn.rollback()  # Rollback if there's an error
+            sys.exit(1)
+
+# Create table
+print("Creating table...")
+sql_commands = read_sql_file('./sql/create_taxi_table.sql')
+execute_sql_commands(sql_commands, cursor, conn)
+
+# Simulate CDC
+print("Simulating CDC...")
+sql_commands = read_sql_file('./sql/simulate_taxi_cdc.sql')
+execute_sql_commands(sql_commands, cursor, conn)
 
 # Load data from CSV
+print("Loading data from CSV...")
 data = pd.read_csv(data_file_path)
 
+# Apply max_records if specified
+if args.max_records is not None:
+    data = data.head(args.max_records)
+
 # Insert query
-insert_query = """
-INSERT INTO TaxiData (VendorID, tpep_pickup_datetime, tpep_dropoff_datetime, passenger_count, trip_distance, 
-                      RatecodeID, store_and_fwd_flag, PULocationID, DOLocationID, payment_type, fare_amount, 
-                      extra, mta_tax, tip_amount, tolls_amount, improvement_surcharge, total_amount, congestion_surcharge)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-"""
+insert_query = read_sql_file('./sql/insert_taxi_record.sql')[0]  # Ensure single insert query is read
 
 # Convert DataFrame to list of tuples
 data_tuples = list(data.itertuples(index=False, name=None))
@@ -111,6 +128,7 @@ def insert_batch(cursor, batch):
     sys.exit(1)
 
 # Process data in batches and display progress
+print("Inserting data in batches...")
 total_batches = (len(data_tuples) + batch_size - 1) // batch_size  # Calculate total number of batches
 with tqdm(total=total_batches, desc="Inserting batches", unit="batch") as pbar:
     for i in range(0, len(data_tuples), batch_size):
