@@ -8,6 +8,12 @@ resource "azurerm_data_factory" "this" {
   }
 }
 
+resource "azurerm_role_assignment" "adf_blob_contributor" {
+  principal_id         = azurerm_data_factory.this.identity[0].principal_id
+  role_definition_name = "Storage Blob Data Contributor"
+  scope                = azurerm_storage_account.this.id
+}
+
 resource "azurerm_data_factory_linked_service_sql_server" "source_db" {
   name              = "${local.name}-sql-link"
   data_factory_id   = azurerm_data_factory.this.id
@@ -16,23 +22,30 @@ resource "azurerm_data_factory_linked_service_sql_server" "source_db" {
 }
 
 resource "azurerm_data_factory_dataset_sql_server_table" "source_dataset" {
-  name                = "${local.name}-sql-ds"
-  data_factory_id   = azurerm_data_factory.this.id
+  name                = "${local.short_name}_taxi_sql"
+  data_factory_id     = azurerm_data_factory.this.id
   linked_service_name = azurerm_data_factory_linked_service_sql_server.source_db.name
-  table_name = "dbo_TaxiData_CT"
+  table_name          = "dbo_TaxiData_CT"
 }
 
-resource "azurerm_data_factory_linked_service_azure_blob_storage" "storage" {
-  name              = "${local.name}-storageacc-link"
-  data_factory_id   = azurerm_data_factory.this.id
-  connection_string = "DefaultEndpointsProtocol=https;AccountName=${azurerm_storage_account.this.name};AccountKey=<your_storage_account_key>;EndpointSuffix=core.windows.net"
+resource "azurerm_data_factory_linked_service_data_lake_storage_gen2" "storage" {
+  name                 = "${local.name}-adls-link"
+  data_factory_id      = azurerm_data_factory.this.id
+
+  # Use managed identity for authentication
+  use_managed_identity = true
+  url                  = azurerm_storage_account.this.primary_dfs_endpoint
 }
 
-resource "azurerm_data_factory_dataset_azure_blob" "blob_dataset" {
-  name                = "${local.name}-ds"
-  data_factory_id   = azurerm_data_factory.this.id
-  linked_service_name = azurerm_data_factory_linked_service_azure_blob_storage.storage.name
+resource "azurerm_data_factory_dataset_parquet" "sink_parquet" {
+  name                =  "${local.short_name}_taxi_parquet"
+  data_factory_id     = azurerm_data_factory.this.id
+  linked_service_name = azurerm_data_factory_linked_service_data_lake_storage_gen2.storage.name
+  compression_codec   = "snappy"
 
-  path     = "taxi_data_cdc"
-  filename = "data.parquet"
+  azure_blob_storage_location {
+    container = azurerm_storage_container.this.name
+    path      = "taxi"
+    filename  = "@utcNow().parquet"
+}
 }

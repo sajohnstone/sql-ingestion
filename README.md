@@ -1,8 +1,12 @@
 # sql-ingestion
-How to ingest data from SQL server into Databricks.  This repo will look at a few methods of getting six million rows of data from SQL server into Databricks.  I'm using Azure SQL for ease but any SQL, Postgre, MySQL should work along the sames lines.  The methods I will be using are:-
- - CDC: Using CDC on Data Factory and letting DBX pull data from that stream
- - Streaming: Using streaming to get data into to DBX
- - MERGE INTO: Using MERGE into and the JDBC driver (note this is not recommended at scale)
+This repository explores various methods for ingesting six million rows of data from SQL Server into Databricks. While the example uses Azure SQL for convenience, these approaches can be applied to other databases like PostgreSQL or MySQL. The methods covered include:
+
+ - CDC (Change Data Capture): Leveraging CDC in Azure Data Factory to stream incremental changes into Databricks.
+ - Streaming: Using a streaming approach to continuously ingest data into Databricks.
+ - MERGE INTO: Utilizing the MERGE INTO command with the JDBC driver (note: not recommended for large-scale operations).
+ - Snapshotting: Performing a full snapshot of data for a specific day (partitioned).
+
+Each method provides different trade-offs in terms of scalability, performance, and use case suitability.
 
 
 ## CDC

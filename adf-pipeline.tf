@@ -14,7 +14,7 @@ resource "azurerm_data_factory_pipeline" "taxi_incremental" {
       ],
       "outputs" : [
         {
-          "referenceName" : azurerm_data_factory_dataset_azure_blob.blob_dataset.name,
+          "referenceName" : azurerm_data_factory_dataset_parquet.sink_parquet.name,
           "type" : "DatasetReference"
         }
       ],
@@ -22,7 +22,7 @@ resource "azurerm_data_factory_pipeline" "taxi_incremental" {
         "type" : "SqlSource"
       },
       "sink" : {
-        "type" : "BlobSink",
+        "type" : "AzureDataLakeStoreSink",  # Updated for ADLS Gen2
         "format" : {
           "type" : "ParquetFormat"
         }

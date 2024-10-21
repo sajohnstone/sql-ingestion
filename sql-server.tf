@@ -26,6 +26,15 @@ resource "azurerm_sql_firewall_rule" "allow_my_ip" {
   end_ip_address      = data.http.my_ip.body
 }
 
+#Allow all azure services to reach the DB
+resource "azurerm_sql_firewall_rule" "allow_azure_services" {
+  name                = "AllowAzureServices"
+  resource_group_name = azurerm_resource_group.this.name
+  server_name         = azurerm_mssql_server.this.name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
+}
+
 /*
 resource "azurerm_private_endpoint" "this" {
   name                = "${local.name}-endpoint"
