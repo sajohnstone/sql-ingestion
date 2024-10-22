@@ -46,6 +46,7 @@ def load_sql_from_file(file_path):
 # Insert new record into TaxiData
 def insert_record(cursor):
     """Insert a new record into the TaxiData table."""
+    print("starting update...")
     new_record = (
         random.randint(1, 10),  # VendorID
         '2024-10-20 10:00:00',  # tpep_pickup_datetime
@@ -74,6 +75,7 @@ def insert_record(cursor):
 # Update an existing record in TaxiData
 def update_record(cursor, id_to_update):
     """Update a record in the TaxiData table."""
+    print("starting update...")
     update_query = load_sql_from_file('./sql/update_taxi_record.sql')
     
     new_passenger_count = random.randint(1, 5)
@@ -86,6 +88,7 @@ def update_record(cursor, id_to_update):
 # Delete a record from TaxiData
 def delete_record(cursor, id_to_delete):
     """Delete a record from the TaxiData table."""
+    print("starting delete...")
     delete_query = load_sql_from_file('./sql/delete_taxi_record.sql')
     cursor.execute(delete_query, id_to_delete)
     print(f"Deleted record with VendorID {id_to_delete}")

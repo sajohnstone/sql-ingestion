@@ -92,11 +92,6 @@ print("Creating table...")
 sql_commands = read_sql_file('./sql/create_taxi_table.sql')
 execute_sql_commands(sql_commands, cursor, conn)
 
-# Simulate CDC
-print("Simulating CDC...")
-sql_commands = read_sql_file('./sql/simulate_taxi_cdc.sql')
-execute_sql_commands(sql_commands, cursor, conn)
-
 # Load data from CSV
 print("Loading data from CSV...")
 data = pd.read_csv(data_file_path)
@@ -135,6 +130,12 @@ with tqdm(total=total_batches, desc="Inserting batches", unit="batch") as pbar:
         batch = data_tuples[i:i + batch_size]
         insert_batch(cursor, batch)
         pbar.update(1)  # Update the progress bar by 1 after each batch is inserted
+
+
+# Simulate CDC
+print("Setting up CDC simulation...")
+sql_commands = read_sql_file('./sql/simulate_taxi_cdc.sql')
+execute_sql_commands(sql_commands, cursor, conn)
 
 # Close the cursor and connection
 cursor.close()

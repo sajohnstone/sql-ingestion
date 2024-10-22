@@ -1,4 +1,4 @@
-.PHONY: plan apply destroy documentation check-security shell format lint format prep help set-env setup run
+.PHONY: plan apply destroy documentation check-security shell format lint format prep help set-env setup run simulate
 
 ENV=dev
 SUBFOLDER=.
@@ -24,15 +24,15 @@ set-env:
 	@if [ -z $(ENV) ]; then \
 		echo "$(BOLD)$(RED)ENV was not set$(RESET)"; \
 		ERROR=1; \
-	 fi
+	fi
 	@if [ ! -z $${ERROR} ] && [ $${ERROR} -eq 1 ]; then \
 		echo "$(BOLD)Example usage: \`AWS_PROFILE=whatever ENV=demo REGION=us-east-2 make plan\`$(RESET)"; \
 		exit 1; \
-	 fi
+	fi
 	@if [ ! -f "$(VARS)" ]; then \
 		echo "$(BOLD)$(RED)Could not find variables file: $(VARS)$(RESET)"; \
 		exit 1; \
-	 fi
+	fi
 
 prep: set-env
 	@docker-compose run --rm build terraform init
@@ -70,12 +70,17 @@ setup: ## Set up Python virtual environment and install dependencies.
 	@echo "Setting up the Python virtual environment..."
 	$(PYTHON) -m venv $(VENV_DIR)
 	@echo "Installing dependencies..."
-	$(PIP) install pandas pyodbc python-dotenv tqdm
+	$(PIP) install -r requirements.txt  # Update to use requirements.txt
 
 run: setup ## Run the data import script.
 	@echo "Running the import script..."
-	$(VENV_DIR)/bin/$(PYTHON) ./scripts/import.py --max_records=$(MAX_RECORDS)
+	$(VENV_DIR)/bin/$(PYTHON) ./setup/import.py --max_records=$(MAX_RECORDS)
+
+# New target for ingesting data to ADLS
+ingest_sql_to_adls: setup ## Run the SQL to ADLS ingestion script.
+	@echo "Running the SQL to ADLS ingestion script..."
+	$(VENV_DIR)/bin/$(PYTHON) ./pipe/ingest_sql_to_adls.py
 
 simulate: setup ## Run the data import script.
 	@echo "Running the simulate script..."
-	$(VENV_DIR)/bin/$(PYTHON) ./scripts/simulate_workload.py
+	$(VENV_DIR)/bin/$(PYTHON) ./setup/simulate_workload.py
