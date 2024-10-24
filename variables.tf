@@ -8,3 +8,8 @@ variable "sql_server_password" {
   description = "The password of the SQL server"
 }
 
+variable "workspace_id" {
+  type        = string
+  description = "The ID of the workspace"
+}
+
