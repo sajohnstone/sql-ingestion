@@ -1,7 +1,7 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Load taxi data to bronze
-# MAGIC Takes the taxi data and loads it into bronze
+# MAGIC # Load taxi data
+# MAGIC Takes the taxi data and loads it
 
 # COMMAND ----------
 

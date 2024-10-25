@@ -13,7 +13,7 @@ CATALOG_NAME = "stu_sandbox"
 
 # DBTITLE 1,able
 schemas = [
-    {"name": "bronze", "tables": ["taxi_data_cdc"]},
+    {"name": "bronze", "tables": ["taxi_data_cdc", "taxi_data_snapshot"]},
     {"name": "silver", "tables": []},
     {"name": "gold", "tables": []}
 ]

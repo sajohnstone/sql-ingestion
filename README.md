@@ -1,14 +1,16 @@
 # sql-ingestion
-This repository explores various methods for ingesting six million rows of data from SQL Server into Databricks. While the example uses Azure SQL for convenience, these approaches can be applied to other databases like PostgreSQL or MySQL. The methods covered include:
+This repository explores various methods for ingesting data from SQL Server into Databricks. While the example uses Azure SQL for convenience, these approaches can be applied to other databases like PostgreSQL or MySQL. The methods covered include:
 
- - CDC (Change Data Capture): Leveraging CDC in Azure Data Factory to stream incremental changes into Databricks.
- - Streaming: Using a streaming approach to continuously ingest data into Databricks.
- - MERGE INTO: Utilizing the MERGE INTO command with the JDBC driver (note: not recommended for large-scale operations).
+ - ADF > ADLS Gen2 > DBX WF: Using Azure Data Factory (ADF) to ADLS Gen2 storage account then into Databricks using a workflow
+ - SQL JDBC: Connecting from Databricks via JDBC direct to SQL (obviously this required a direct connection)
+ - ADF > ADLS Gen2 > DBX DLT: Using Azure Data Factory (ADF) to ADLS Gen2 storage account then into Databricks via Delta Live Tables (DLT)
+
+ Once the data is in we will use a number of methods to move it including
+ - CDC (Change Data Capture): Leveraging CDC in to provide an append only data
+ - MERGE INTO: Utilizing the MERGE INTO command to merge data from one datasource into another
  - Snapshotting: Performing a full snapshot of data for a specific day (partitioned).
- - Using DTL: 
 
 Each method provides different trade-offs in terms of scalability, performance, and use case suitability.
-
 
 ## CDC
 For this we will use the CDC data and using ADF to read this data and write it to Parquet files on a storage account, then Databrick will stream or batch this in via Autoloader.
@@ -25,17 +27,6 @@ EXEC sys.sp_cdc_enable_table
     @source_schema = 'dbo',          -- Schema of the source table
     @source_name = 'YourTableName',  -- Name of the source table
     @role_name = NULL;                -- Optional role name for permissions
-```
-
-
-
-## Requirements
-For using the ODBC you might need to install it
-```bash
-brew install unixodbc
-brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
-brew update
-brew install msodbcsql17
 ```
 
 ## Getting the data
