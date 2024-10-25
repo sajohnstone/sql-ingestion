@@ -5,6 +5,7 @@ This repository explores various methods for ingesting six million rows of data 
  - Streaming: Using a streaming approach to continuously ingest data into Databricks.
  - MERGE INTO: Utilizing the MERGE INTO command with the JDBC driver (note: not recommended for large-scale operations).
  - Snapshotting: Performing a full snapshot of data for a specific day (partitioned).
+ - Using DTL: 
 
 Each method provides different trade-offs in terms of scalability, performance, and use case suitability.
 
