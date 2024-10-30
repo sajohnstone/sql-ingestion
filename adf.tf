@@ -21,7 +21,6 @@ resource "azurerm_data_factory_linked_service_sql_server" "source_db" {
   depends_on        = [azurerm_mssql_server.this]
 }
 
-
 resource "azurerm_data_factory_linked_service_data_lake_storage_gen2" "storage" {
   name                 = "${local.name}-adls-link"
   data_factory_id      = azurerm_data_factory.this.id

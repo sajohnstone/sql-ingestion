@@ -164,21 +164,41 @@ resource "azurerm_data_factory_pipeline" "taxi_cdc" {
             "referenceName" : azurerm_data_factory_dataset_parquet.cdc_sink_parquet.name,
             "type" : "DatasetReference"
           }
+        ]
+      },
+      {
+        "name" : "Start Workflow",
+        "type" : "ExecutePipeline",
+        "dependsOn" : [
+          {
+            "activity" : "CopyDataActivity",
+            "dependencyConditions" : [
+              "Succeeded"
+            ]
+          }
         ],
-        "sink" : {
-          "format" : {
-            "type" : "ParquetFormat"
-          },
-          "type" : "AzureDataLakeStoreSink"
+        "policy" : {
+          "secureInput" : false
         },
-        "source" : {
-          "type" : "SqlSource"
+        "userProperties" : [],
+        "typeProperties" : {
+          "pipeline" : {
+            "referenceName" : azurerm_data_factory_pipeline.databricks_job_pipeline.name,
+            "type" : "PipelineReference"
+          },
+          "waitOnCompletion" : true,
+          "parameters" : {
+            "DatabricksWorkspaceID" : local.workspace_id,
+            "JobID" : databricks_job.taxidata_ingestion_cdc.id,
+            "WaitSeconds" : "60"
+          }
         }
       }
-  ])
+    ]
+  )
+
+  depends_on = [ databricks_job.taxidata_ingestion_cdc ]
 }
-
-
 resource "azurerm_data_factory_dataset_sql_server_table" "cdc_source_dataset" {
   name                = "${local.short_name}_dbo_taxidata_ct"
   data_factory_id     = azurerm_data_factory.this.id
