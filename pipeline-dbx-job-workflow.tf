@@ -19,16 +19,15 @@ resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
         "typeProperties" : {
           "method" : "POST",
           "url" : {
-            "value" : "@concat('https://',pipeline().parameters.DatabricksWorkspaceID,'.azuredatabricks.net/api/2.1/jobs/run-now')",
+            "value" : "@concat(pipeline().parameters.Workspace_url,'/api/2.1/jobs/run-now')",
             "type" : "Expression"
           },
           "body" : {
             "value" : "@concat('{\"job_id\":',pipeline().parameters.JobID,'}')",
             "type" : "Expression"
           },
-          "authentication" : {
-            "type" : "MSI",
-            "resource" : "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d"
+          "headers" : {
+            "Authorization" : "Bearer ${var.workspace_token}"
           }
         }
       },
@@ -65,12 +64,11 @@ resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
               "typeProperties" : {
                 "method" : "GET",
                 "url" : {
-                  "value" : "@concat('https://',pipeline().parameters.DatabricksWorkspaceID,'.azuredatabricks.net/api/2.1/jobs/runs/get?run_id=',activity('Execute Jobs API').output.run_id)",
+                  "value" : "@concat(pipeline().parameters.Workspace_url,'/api/2.1/jobs/runs/get?run_id=',activity('Execute Jobs API').output.run_id)",
                   "type" : "Expression"
                 },
-                "authentication" : {
-                  "type" : "MSI",
-                  "resource" : "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d"
+                "headers" : {
+                  "Authorization" : "Bearer ${var.workspace_token}"
                 }
               }
             },
@@ -125,9 +123,9 @@ resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
   )
 
   parameters = {
-    JobID                 = "string"
-    DatabricksWorkspaceID = "string"
-    WaitSeconds           = "int"
+    JobID         = "string"
+    Workspace_url = "string"
+    WaitSeconds   = "int"
   }
 
   variables = {

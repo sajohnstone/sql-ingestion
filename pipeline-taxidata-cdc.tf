@@ -188,7 +188,7 @@ resource "azurerm_data_factory_pipeline" "taxi_cdc" {
           },
           "waitOnCompletion" : true,
           "parameters" : {
-            "DatabricksWorkspaceID" : local.workspace_id,
+            "Workspace_url" : var.workspace_url,
             "JobID" : databricks_job.taxidata_ingestion_cdc.id,
             "WaitSeconds" : "60"
           }
@@ -197,7 +197,7 @@ resource "azurerm_data_factory_pipeline" "taxi_cdc" {
     ]
   )
 
-  depends_on = [ databricks_job.taxidata_ingestion_cdc ]
+  depends_on = [databricks_job.taxidata_ingestion_cdc]
 }
 resource "azurerm_data_factory_dataset_sql_server_table" "cdc_source_dataset" {
   name                = "${local.short_name}_dbo_taxidata_ct"

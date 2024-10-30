@@ -10,7 +10,7 @@ variable "sql_server_password" {
 
 variable "workspace_url" {
   type        = string
-  description = "The ID of the workspace"
+  description = "The URL of the workspace e.g. https://adb-43432432423423.43.azuredatabricks.net  NOTE: must not have trailing '/'"
 }
 
 variable "workspace_token" {

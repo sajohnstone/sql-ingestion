@@ -168,6 +168,34 @@ resource "azurerm_data_factory_pipeline" "taxi_snapshot" {
             "type": "DatasetReference"
           }
         ]
+      },
+      {
+        "name" : "Start Workflow",
+        "type" : "ExecutePipeline",
+        "dependsOn" : [
+          {
+            "activity" : "CopyDataActivity",
+            "dependencyConditions" : [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy" : {
+          "secureInput" : false
+        },
+        "userProperties" : [],
+        "typeProperties" : {
+          "pipeline" : {
+            "referenceName" : azurerm_data_factory_pipeline.databricks_job_pipeline.name,
+            "type" : "PipelineReference"
+          },
+          "waitOnCompletion" : true,
+          "parameters" : {
+            "Workspace_url" : var.workspace_url,
+            "JobID" : databricks_job.taxidata_ingestion_cdc.id,
+            "WaitSeconds" : "60"
+          }
+        }
       }
     ]
   )
