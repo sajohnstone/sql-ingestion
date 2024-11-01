@@ -69,15 +69,10 @@ setup: ## Set up Python virtual environment and install dependencies.
 	@echo "Installing dependencies..."
 	$(PIP) install -r requirements.txt  # Update to use requirements.txt
 
-run: setup ## Run the data import script.
+import_data: setup ## Run the data import script.
 	@echo "Running the import script..."
-	$(VENV_DIR)/bin/$(PYTHON) ./setup/import.py --max_records=$(MAX_RECORDS)
-
-# New target for ingesting data to ADLS
-ingest_sql_to_adls: setup ## Run the SQL to ADLS ingestion script.
-	@echo "Running the SQL to ADLS ingestion script..."
-	$(VENV_DIR)/bin/$(PYTHON) ./pipe/ingest_sql_to_adls.py
+	$(VENV_DIR)/bin/$(PYTHON) ./mock_sql_data/import.py --max_records=$(MAX_RECORDS)
 
 simulate: setup ## Run the data import script.
 	@echo "Running the simulate script..."
-	$(VENV_DIR)/bin/$(PYTHON) ./setup/simulate_workload.py
+	$(VENV_DIR)/bin/$(PYTHON) ./mock_sql_data/simulate_workload.py

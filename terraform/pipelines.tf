@@ -8,6 +8,7 @@ module "sql-jdbc" {
   sql_server_fqdn            = module.base.sql_server_fqdn
   sql_server_username        = module.base.sql_server_username
   sql_server_password        = var.sql_server_password
+  depends_on                 = [module.base]
 }
 
 module "dxt-workflow" {
@@ -18,9 +19,11 @@ module "dxt-workflow" {
   pipeline_taxi_cdc_name      = module.base.pipeline_taxi_cdc_name
   pipeline_taxi_snapshot_name = module.base.pipeline_taxi_snapshot_name
   pipeline_dbx_workflow_name  = module.base.pipeline_dbx_workflow_name
+  depends_on                  = [module.base]
 }
 
 module "dbx-dlt" {
-  source = "./pipelines/dbx-dlt"
-  name   = local.name
+  source     = "./pipelines/dbx-dlt"
+  name       = local.name
+  depends_on = [module.base]
 }

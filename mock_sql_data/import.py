@@ -15,7 +15,8 @@ args = parser.parse_args()
 
 # Path to your .env file
 env_path = "./dev.env"
-data_file_path = './data/data.csv'
+data_file_path = './mock_sql_data/data/data.csv'
+sql_commands_path = './mock_sql_data/sql/'
 
 # Sense checks
 if not os.path.exists(env_path):
@@ -60,9 +61,7 @@ def connect_to_db():
 conn = connect_to_db()
 cursor = conn.cursor()
 
-# Function to read SQL from a file
 def read_sql_file(file_path):
-    """Read SQL commands from a file and split by GO."""
     with open(file_path, 'r') as file:
         sql_script = file.read()
     
@@ -89,7 +88,7 @@ def execute_sql_commands(commands, cursor, conn):
 
 # Create table
 print("Creating table...")
-sql_commands = read_sql_file('./sql/create_taxi_table.sql')
+sql_commands = read_sql_file(f"{sql_commands_path}/create_taxi_table.sql")
 execute_sql_commands(sql_commands, cursor, conn)
 
 # Load data from CSV
@@ -101,7 +100,7 @@ if args.max_records is not None:
     data = data.head(args.max_records)
 
 # Insert query
-insert_query = read_sql_file('./sql/insert_taxi_record.sql')[0]  # Ensure single insert query is read
+insert_query = read_sql_file(f"{sql_commands_path}/insert_taxi_record.sql")[0] 
 
 # Convert DataFrame to list of tuples
 data_tuples = list(data.itertuples(index=False, name=None))
@@ -134,7 +133,7 @@ with tqdm(total=total_batches, desc="Inserting batches", unit="batch") as pbar:
 
 # Simulate CDC
 print("Setting up CDC simulation...")
-sql_commands = read_sql_file('./sql/simulate_taxi_cdc.sql')
+sql_commands = read_sql_file(f"{sql_commands_path}/simulate_taxi_cdc.sql")
 execute_sql_commands(sql_commands, cursor, conn)
 
 # Close the cursor and connection

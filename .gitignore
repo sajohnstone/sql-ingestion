@@ -219,6 +219,6 @@ terraform.rc
 
 # Built Visual Studio Code Extensions
 *.vsix
-data/data.csv
 
 *.env
+mock_sql_data/data/data.csv

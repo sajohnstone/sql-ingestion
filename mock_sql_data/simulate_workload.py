@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 # Path to your .env file
 env_path = "./dev.env"
+sql_commands_path = './mock_sql_data/sql/'
 
 if not os.path.exists(env_path):
     print(f"Error: .env file not found at {env_path}")
@@ -34,7 +35,7 @@ def connect_to_db():
 # Retrieve IDs from TaxiData table
 def get_ids(cursor):
     """Get all IDs from the TaxiData table."""
-    cursor.execute("SELECT VendorID FROM TaxiData")
+    cursor.execute("SELECT VendorID FROM TaxiData where VendorID >= 10")
     return [row[0] for row in cursor.fetchall()]
 
 # Load SQL from file
@@ -46,9 +47,9 @@ def load_sql_from_file(file_path):
 # Insert new record into TaxiData
 def insert_record(cursor):
     """Insert a new record into the TaxiData table."""
-    print("starting update...")
+    print("starting insert...")
     new_record = (
-        random.randint(1, 10),  # VendorID
+        random.randint(100, 100000),  # VendorID
         '2024-10-20 10:00:00',  # tpep_pickup_datetime
         '2024-10-20 10:30:00',  # tpep_dropoff_datetime
         random.randint(1, 5),    # passenger_count
@@ -68,7 +69,7 @@ def insert_record(cursor):
         round(random.uniform(0.0, 5.0), 2)      # congestion_surcharge
     )
     
-    insert_query = load_sql_from_file('./sql/insert_taxi_record.sql')
+    insert_query = load_sql_from_file(f"{sql_commands_path}/insert_taxi_record.sql")
     cursor.execute(insert_query, new_record)
     print(f"Inserted record: {new_record}")
 
@@ -76,7 +77,7 @@ def insert_record(cursor):
 def update_record(cursor, id_to_update):
     """Update a record in the TaxiData table."""
     print("starting update...")
-    update_query = load_sql_from_file('./sql/update_taxi_record.sql')
+    update_query = load_sql_from_file(f"{sql_commands_path}/update_taxi_record.sql")
     
     new_passenger_count = random.randint(1, 5)
     new_trip_distance = round(random.uniform(1.0, 10.0), 2)
@@ -89,7 +90,7 @@ def update_record(cursor, id_to_update):
 def delete_record(cursor, id_to_delete):
     """Delete a record from the TaxiData table."""
     print("starting delete...")
-    delete_query = load_sql_from_file('./sql/delete_taxi_record.sql')
+    delete_query = load_sql_from_file(f"{sql_commands_path}/delete_taxi_record.sql")
     cursor.execute(delete_query, id_to_delete)
     print(f"Deleted record with VendorID {id_to_delete}")
 
@@ -101,12 +102,12 @@ def simulate_workload():
     print("Fetching ids to be able to simulate delete / updates...")
     ids = get_ids(cursor)
     if not ids:
-        print("No records found in TaxiData. Please insert records before running the simulation.")
-        conn.close()
-        return
+        print("No records found in TaxiData.  Will do insert only simulation.")
+        actions = ['insert']
+    else:
+        actions = ['insert', 'update', 'delete']
 
-    actions = ['insert', 'update', 'delete']
-    max_time_between_actions = 10  # Max wait time in seconds
+    max_time_between_actions = 1  # Max wait time in seconds
 
     print("Starting simulation...")
     try:
@@ -124,7 +125,7 @@ def simulate_workload():
                 ids.remove(id_to_delete)  # Remove ID from list to avoid deleting it again
 
             # Wait for a random amount of time
-            wait_time = random.uniform(1, max_time_between_actions)
+            wait_time = random.uniform(0.2, max_time_between_actions)
             print(f"Waiting for {wait_time:.2f} seconds before next action...")
             time.sleep(wait_time)
 

@@ -24,7 +24,7 @@ resource "azurerm_data_factory_pipeline" "taxi_snapshot" {
         "type" : "ExecutePipeline",
         "dependsOn" : [
           {
-            "activity" : "CopyDataActivity",
+            "activity" : "CopyData",
             "dependencyConditions" : [
               "Succeeded"
             ]

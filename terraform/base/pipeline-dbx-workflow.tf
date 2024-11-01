@@ -1,5 +1,5 @@
 resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
-  name            = "${var.name}-dbx-workflow"
+  name            = "${var.name}-base-dbx-workflow"
   data_factory_id = azurerm_data_factory.this.id
 
   activities_json = jsonencode(

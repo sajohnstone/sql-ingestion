@@ -71,5 +71,5 @@ ACCESS_CONNECTOR_ID=${azurerm_databricks_access_connector.this.id}
 USER_ID=${azurerm_user_assigned_identity.this.id}
 
 EOT
-  filename = "${path.module}/${terraform.workspace}.env"
+  filename = "${path.module}/../../${terraform.workspace}.env"
 }

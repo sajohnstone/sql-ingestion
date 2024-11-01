@@ -119,7 +119,7 @@ locals {
 }
 
 resource "azurerm_data_factory_pipeline" "taxi_cdc" {
-  name            = "${var.name}-taxi-cdc"
+  name            = "${var.name}-base-taxi-cdc-copydata"
   data_factory_id = azurerm_data_factory.this.id
 
   activities_json = jsonencode(
