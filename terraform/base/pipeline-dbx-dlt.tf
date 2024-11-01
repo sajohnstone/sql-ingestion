@@ -41,9 +41,9 @@ resource "azurerm_data_factory_pipeline" "databricks_dlt_pipeline" {
         ],
         "userProperties" : [],
         "typeProperties" : {
-          "expression" : {
-            "value" : "@not(equals(variables('PipelineStatus'),'RUNNING'))",
-            "type" : "Expression"
+          "expression": {
+              "value": "@or(or(equals(variables('PipelineStatus'),'RUNNING'), equals(variables('PipelineStatus'),'FAILED')), equals(variables('PipelineStatus'),'IDLE'))",
+              "type": "Expression"
           },
           "activities" : [
             {
@@ -61,7 +61,7 @@ resource "azurerm_data_factory_pipeline" "databricks_dlt_pipeline" {
               "typeProperties" : {
                 "method" : "GET",
                 "url" : {
-                  "value" : "@concat(pipeline().parameters.Workspace_url,'/api/2.0/pipelines/',pipeline().parameters.PipelineID,'/status')",
+                  "value" : "@concat(pipeline().parameters.Workspace_url,'/api/2.0/pipelines/',pipeline().parameters.PipelineID)",
                   "type" : "Expression"
                 },
                 "headers" : {
@@ -88,9 +88,43 @@ resource "azurerm_data_factory_pipeline" "databricks_dlt_pipeline" {
               "typeProperties" : {
                 "variableName" : "PipelineStatus",
                 "value" : {
-                  "value" : "@if(or(equals(activity('Check DLT Pipeline Status').output.update.state, 'PENDING'), equals(activity('Check DLT Pipeline Status').output.update.state, 'RUNNING')), 'RUNNING', activity('Check DLT Pipeline Status').output.update.state)",
+                  "value" : "@activity('Check DLT Pipeline Status').output.state",
                   "type" : "Expression"
                 }
+              }
+            },
+            {
+              "name" : "Fail If Pipeline Status is Failed",
+              "type" : "IfCondition",
+              "dependsOn" : [
+                {
+                  "activity" : "Set Pipeline Status",
+                  "dependencyConditions" : [
+                    "Succeeded"
+                  ]
+                }
+              ],
+              "userProperties" : [],
+              "typeProperties" : {
+                "expression" : {
+                  "value" : "@equals(variables('PipelineStatus'), 'FAILED')",
+                  "type" : "Expression"
+                },
+                "ifTrueActivities" : [
+                  {
+                    "name" : "Fail Pipeline",
+                    "type" : "Fail",
+                    "userProperties" : [],
+                    "typeProperties" : {
+                      "message" : {
+                        "value" : "@concat('ERROR :', activity('Check DLT Pipeline Status').output)",
+                        "type" : "Expression"
+                      },
+                      "errorCode" : "100"
+                    }
+                  }
+                ],
+                "ifFalseActivities" : []
               }
             },
             {
@@ -98,7 +132,7 @@ resource "azurerm_data_factory_pipeline" "databricks_dlt_pipeline" {
               "type" : "Wait",
               "dependsOn" : [
                 {
-                  "activity" : "Set Pipeline Status",
+                  "activity" : "Fail If Pipeline Status is Failed",
                   "dependencyConditions" : [
                     "Succeeded"
                   ]
@@ -120,10 +154,10 @@ resource "azurerm_data_factory_pipeline" "databricks_dlt_pipeline" {
   )
 
   parameters = {
-    PipelineID     = "string"
-    Workspace_url  = "string"
-    Workspace_token  = "string"
-    WaitSeconds    = "int"
+    PipelineID      = "string"
+    Workspace_url   = "string"
+    Workspace_token = "string"
+    WaitSeconds     = "int"
   }
 
   variables = {

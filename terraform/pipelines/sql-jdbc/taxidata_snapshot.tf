@@ -21,6 +21,7 @@ resource "databricks_job" "taxidata_sql_snapshot" {
 resource "azurerm_data_factory_pipeline" "taxi_snapshot" {
   name            = "${var.name}-taxi-sql-snapshot"
   data_factory_id = var.data_factory_id
+  folder          = "Snapshot Pipelines"
 
   activities_json = jsonencode(
     [

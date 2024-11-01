@@ -21,6 +21,7 @@ resource "databricks_job" "taxidata_sql_cdc" {
 resource "azurerm_data_factory_pipeline" "taxi_cdc" {
   name            = "${var.name}-taxi-sql-cdc"
   data_factory_id = var.data_factory_id
+  folder          = "CDC Pipelines"
 
   activities_json = jsonencode(
     [
