@@ -119,7 +119,7 @@ locals {
 }
 
 resource "azurerm_data_factory_pipeline" "taxi_cdc" {
-  name            = "${local.name}-taxi-cdc"
+  name            = "${var.name}-taxi-cdc"
   data_factory_id = azurerm_data_factory.this.id
 
   activities_json = jsonencode(
@@ -165,42 +165,12 @@ resource "azurerm_data_factory_pipeline" "taxi_cdc" {
             "type" : "DatasetReference"
           }
         ]
-      },
-      {
-        "name" : "Start Workflow",
-        "type" : "ExecutePipeline",
-        "dependsOn" : [
-          {
-            "activity" : "CopyDataActivity",
-            "dependencyConditions" : [
-              "Succeeded"
-            ]
-          }
-        ],
-        "policy" : {
-          "secureInput" : false
-        },
-        "userProperties" : [],
-        "typeProperties" : {
-          "pipeline" : {
-            "referenceName" : azurerm_data_factory_pipeline.databricks_job_pipeline.name,
-            "type" : "PipelineReference"
-          },
-          "waitOnCompletion" : true,
-          "parameters" : {
-            "Workspace_url" : var.workspace_url,
-            "JobID" : databricks_job.taxidata_ingestion_cdc.id,
-            "WaitSeconds" : "60"
-          }
-        }
       }
     ]
   )
-
-  depends_on = [databricks_job.taxidata_ingestion_cdc]
 }
 resource "azurerm_data_factory_dataset_sql_server_table" "cdc_source_dataset" {
-  name                = "${local.short_name}_dbo_taxidata_ct"
+  name                = "${var.short_name}_dbo_taxidata_ct"
   data_factory_id     = azurerm_data_factory.this.id
   linked_service_name = azurerm_data_factory_linked_service_sql_server.source_db.name
   table_name          = "dbo_TaxiData_CT"
@@ -217,7 +187,7 @@ resource "azurerm_data_factory_dataset_sql_server_table" "cdc_source_dataset" {
 }
 
 resource "azurerm_data_factory_dataset_parquet" "cdc_sink_parquet" {
-  name                = "${local.short_name}_taxidata_ct"
+  name                = "${var.short_name}_taxidata_ct"
   data_factory_id     = azurerm_data_factory.this.id
   linked_service_name = azurerm_data_factory_linked_service_data_lake_storage_gen2.storage.name
   compression_codec   = "snappy"

@@ -1,7 +1,7 @@
 resource "azurerm_mssql_server" "this" {
-  name                         = "${local.name}-sql-server"
-  resource_group_name          = azurerm_resource_group.this.name
-  location                     = azurerm_resource_group.this.location
+  name                         = "${var.name}-sql-server"
+  location                     = var.location
+  resource_group_name          = var.resource_group_name
   version                      = "12.0"
   administrator_login          = "db_admin"
   administrator_login_password = var.sql_server_password
@@ -12,7 +12,7 @@ resource "azurerm_mssql_server" "this" {
 }
 
 resource "azurerm_mssql_database" "this" {
-  name        = "${local.name}-taxi"
+  name        = "${var.name}-taxi"
   server_id   = azurerm_mssql_server.this.id
   sku_name    = "Basic"
   max_size_gb = 2
@@ -29,7 +29,7 @@ resource "azurerm_sql_firewall_rule" "allow_my_ip" {
 #Allow all azure services to reach the DB
 resource "azurerm_sql_firewall_rule" "allow_azure_services" {
   name                = "AllowAzureServices"
-  resource_group_name = azurerm_resource_group.this.name
+  resource_group_name = var.resource_group_name
   server_name         = azurerm_mssql_server.this.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"

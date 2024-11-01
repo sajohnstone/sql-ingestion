@@ -1,13 +1,13 @@
 resource "azurerm_user_assigned_identity" "this" {
-  name                = "${local.name}-uami"
-  location            = azurerm_resource_group.this.location
-  resource_group_name = azurerm_resource_group.this.name
+  name                = "${var.name}-uami"
+  location            = var.location
+  resource_group_name = var.resource_group_name
 }
 
 resource "azurerm_databricks_access_connector" "this" {
-  name                = "${local.name}-ac"
-  location            = azurerm_resource_group.this.location
-  resource_group_name = azurerm_resource_group.this.name
+  name                = "${var.name}-ac"
+  location            = var.location
+  resource_group_name = var.resource_group_name
 
   identity {
     type = "UserAssigned"

@@ -99,7 +99,7 @@ locals {
 }
 
 resource "azurerm_data_factory_pipeline" "taxi_snapshot" {
-  name            = "${local.name}-taxi-snapshot"
+  name            = "${var.name}-taxi-snapshot"
   data_factory_id = azurerm_data_factory.this.id
 
   activities_json = jsonencode(
@@ -168,41 +168,13 @@ resource "azurerm_data_factory_pipeline" "taxi_snapshot" {
             "type": "DatasetReference"
           }
         ]
-      },
-      {
-        "name" : "Start Workflow",
-        "type" : "ExecutePipeline",
-        "dependsOn" : [
-          {
-            "activity" : "CopyDataActivity",
-            "dependencyConditions" : [
-              "Succeeded"
-            ]
-          }
-        ],
-        "policy" : {
-          "secureInput" : false
-        },
-        "userProperties" : [],
-        "typeProperties" : {
-          "pipeline" : {
-            "referenceName" : azurerm_data_factory_pipeline.databricks_job_pipeline.name,
-            "type" : "PipelineReference"
-          },
-          "waitOnCompletion" : true,
-          "parameters" : {
-            "Workspace_url" : var.workspace_url,
-            "JobID" : databricks_job.taxidata_ingestion_cdc.id,
-            "WaitSeconds" : "60"
-          }
-        }
       }
     ]
   )
 }
 
 resource "azurerm_data_factory_dataset_sql_server_table" "snapshot_source_dataset" {
-  name                = "${local.short_name}_dbo_taxidata"
+  name                = "${var.short_name}_dbo_taxidata"
   data_factory_id     = azurerm_data_factory.this.id
   linked_service_name = azurerm_data_factory_linked_service_sql_server.source_db.name
 
@@ -235,7 +207,7 @@ resource "azurerm_data_factory_dataset_sql_server_table" "snapshot_source_datase
 }
 
 resource "azurerm_data_factory_dataset_parquet" "snapshot_sink_parquet" {
-  name                = "${local.short_name}_taxidata_snapshot"
+  name                = "${var.short_name}_taxidata_snapshot"
   data_factory_id     = azurerm_data_factory.this.id
   linked_service_name = azurerm_data_factory_linked_service_data_lake_storage_gen2.storage.name
   compression_codec   = "snappy"

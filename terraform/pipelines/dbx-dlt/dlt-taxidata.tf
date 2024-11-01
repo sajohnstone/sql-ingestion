@@ -1,6 +1,6 @@
 resource "databricks_notebook" "taxidata_dlt" {
   language = "PYTHON"
-  source   = "${path.module}/notebooks/taxidata-dlt.py"
+  source   = "${path.module}/code/taxidata-dlt.py"
   path     = "${data.databricks_current_user.me.home}/notebooks/jobs/taxidata-dlt"
 }
 
@@ -9,14 +9,12 @@ resource "databricks_pipeline" "taxi_data_pipeline" {
   catalog = "stu_sandbox"
   target  = "bronze"
 
-  # Specify the notebook that contains the DLT logic
   library {
     notebook {
       path = databricks_notebook.taxidata_dlt.id
     }
   }
 
-  # Configure pipeline settings for widgets (parameters)
   configuration = {
     "schema_name" = "bronze"
     "table_name"  = "taxi_data_cdc"

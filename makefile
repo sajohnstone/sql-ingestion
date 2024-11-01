@@ -2,7 +2,7 @@
 
 ENV=dev
 SUBFOLDER=.
-VARS="./$(ENV).tfvars"
+VARS="$(ENV).tfvars"
 CURRENT_FOLDER=$(shell basename "$$(pwd)")
 WORKSPACE="$(ENV)"
 BOLD=$(shell tput bold)
@@ -29,18 +29,15 @@ set-env:
 		echo "$(BOLD)Example usage: \`AWS_PROFILE=whatever ENV=demo REGION=us-east-2 make plan\`$(RESET)"; \
 		exit 1; \
 	fi
-	@if [ ! -f "$(VARS)" ]; then \
-		echo "$(BOLD)$(RED)Could not find variables file: $(VARS)$(RESET)"; \
-		exit 1; \
-	fi
 
 prep: set-env
-	@docker-compose run --rm build terraform init
+	@docker-compose run --rm build terraform -chdir=./terraform init
 	@echo "$(BOLD)Switching to workspace $(WORKSPACE)$(RESET)"
-	@docker-compose run --rm build terraform workspace select $(WORKSPACE)
+	@docker-compose run --rm build terraform -chdir=./terraform workspace select $(WORKSPACE) || \
+	(@docker-compose run --rm build terraform -chdir=./terraform workspace new $(WORKSPACE))
 
 format: prep ## Rewrites all Terraform configuration files to a canonical format.
-	@docker-compose run --rm build terraform fmt -write=true -recursive
+	@docker-compose run --rm build terraform -chdir=./terraform fmt -write=true -recursive
 
 lint: prep ## Check for possible errors best practices
 	@docker-compose run --rm build tflint
@@ -55,16 +52,16 @@ documentation: prep ## Generate README.md
 	@docker-compose run --rm build terraform-docs markdown table --output-file README.md --output-mode inject . 
 
 plan: prep ## Show deployment plan
-	@docker-compose run --rm build terraform plan -var-file="$(VARS)" 
+	@docker-compose run --rm build terraform -chdir=./terraform plan -var-file="$(VARS)" 
 
 apply: prep ## Deploy resources
-	@docker-compose run --rm build terraform apply -var-file="$(VARS)"
+	@docker-compose run --rm build terraform -chdir=./terraform apply -var-file="$(VARS)"
 
 auto-apply: prep ## Deploy resources
-	@docker-compose run --rm build terraform apply -auto-approve -var-file="$(VARS)"
+	@docker-compose run --rm build terraform -chdir=./terraform apply -auto-approve -var-file="$(VARS)"
 
 destroy: prep ## Destroy resources
-	@docker-compose run --rm build terraform destroy -var-file="$(VARS)"
+	@docker-compose run --rm build terraform -chdir=./terraform destroy -var-file="$(VARS)"
 
 setup: ## Set up Python virtual environment and install dependencies.
 	@echo "Setting up the Python virtual environment..."

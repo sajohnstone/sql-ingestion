@@ -43,6 +43,19 @@ output "access_connector_id" {
   description = "The ID of the Databricks Access Connector."
 }
 
+output "pipeline_taxi_cdc_name" {
+  value = azurerm_data_factory_pipeline.taxi_cdc.name
+}
+
+output "pipeline_taxi_snapshot_name" {
+  value = azurerm_data_factory_pipeline.taxi_snapshot.name
+}
+
+output "pipeline_dbx_workflow_name" {
+  value = azurerm_data_factory_pipeline.databricks_job_pipeline.name
+}
+
+
 ## Save to env File
 resource "local_file" "env_file" {
   content  = <<EOT
