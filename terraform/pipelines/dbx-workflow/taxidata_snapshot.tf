@@ -13,10 +13,15 @@ resource "azurerm_data_factory_pipeline" "taxi_snapshot" {
         "userProperties" : [],
         "typeProperties" : {
           "pipeline" : {
-            "referenceName" : var.pipeline_taxi_snapshot_name,
+            "referenceName" : var.pipeline_sql_to_adls_pipeline,
             "type" : "PipelineReference"
           },
           "waitOnCompletion" : true,
+          "parameters" : {
+            "container" : "data"
+            "tableName" : "TaxiData",
+            "outputPath" : "taxi_data_snapshot"
+          }
         }
       },
       {
@@ -44,6 +49,7 @@ resource "azurerm_data_factory_pipeline" "taxi_snapshot" {
             "Workspace_url" : var.workspace_url,
             "JobID" : databricks_job.taxidata_snapshot.id,
             "WaitSeconds" : "60"
+            "Workspace_token" : var.workspace_token
           }
         }
       }

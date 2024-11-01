@@ -28,10 +28,15 @@ resource "azurerm_data_factory_pipeline" "taxi_cdc" {
         "userProperties" : [],
         "typeProperties" : {
           "pipeline" : {
-            "referenceName" : var.pipeline_taxi_cdc_name,
+            "referenceName" : var.pipeline_sql_to_adls_pipeline,
             "type" : "PipelineReference"
           },
           "waitOnCompletion" : true,
+          "parameters" : {
+            "container" : "data"
+            "tableName" : "TaxiData",
+            "outputPath" : "taxi_data_snapshot"
+          }
         }
       },
       {
@@ -59,6 +64,7 @@ resource "azurerm_data_factory_pipeline" "taxi_cdc" {
             "Workspace_url" : var.workspace_url,
             "JobID" : databricks_job.taxidata_cdc.id,
             "WaitSeconds" : "60"
+            "Workspace_token" : var.workspace_token
           }
         }
       }

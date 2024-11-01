@@ -1,12 +1,12 @@
-resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
-  name            = "${var.name}-dbx-workflow"
+resource "azurerm_data_factory_pipeline" "databricks_dlt_pipeline" {
+  name            = "${var.name}-dlt-pipeline"
   data_factory_id = azurerm_data_factory.this.id
   folder          = "Internal Pipelines"
 
   activities_json = jsonencode(
     [
       {
-        "name" : "Execute Jobs API",
+        "name" : "Start DLT Pipeline",
         "type" : "WebActivity",
         "dependsOn" : [],
         "policy" : {
@@ -20,11 +20,7 @@ resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
         "typeProperties" : {
           "method" : "POST",
           "url" : {
-            "value" : "@concat(pipeline().parameters.Workspace_url,'/api/2.1/jobs/run-now')",
-            "type" : "Expression"
-          },
-          "body" : {
-            "value" : "@concat('{\"job_id\":',pipeline().parameters.JobID,'}')",
+            "value" : "@concat(pipeline().parameters.Workspace_url,'/api/2.0/pipelines/',pipeline().parameters.PipelineID,'/start')",
             "type" : "Expression"
           },
           "headers" : {
@@ -33,11 +29,11 @@ resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
         }
       },
       {
-        "name" : "Wait Until Job Completes",
+        "name" : "Wait Until DLT Pipeline Completes",
         "type" : "Until",
         "dependsOn" : [
           {
-            "activity" : "Execute Jobs API",
+            "activity" : "Start DLT Pipeline",
             "dependencyConditions" : [
               "Succeeded"
             ]
@@ -46,12 +42,12 @@ resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
         "userProperties" : [],
         "typeProperties" : {
           "expression" : {
-            "value" : "@not(equals(variables('JobStatus'),'Running'))",
+            "value" : "@not(equals(variables('PipelineStatus'),'RUNNING'))",
             "type" : "Expression"
           },
           "activities" : [
             {
-              "name" : "Check Job Run API",
+              "name" : "Check DLT Pipeline Status",
               "type" : "WebActivity",
               "dependsOn" : [],
               "policy" : {
@@ -65,7 +61,7 @@ resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
               "typeProperties" : {
                 "method" : "GET",
                 "url" : {
-                  "value" : "@concat(pipeline().parameters.Workspace_url,'/api/2.1/jobs/runs/get?run_id=',activity('Execute Jobs API').output.run_id)",
+                  "value" : "@concat(pipeline().parameters.Workspace_url,'/api/2.0/pipelines/',pipeline().parameters.PipelineID,'/status')",
                   "type" : "Expression"
                 },
                 "headers" : {
@@ -74,11 +70,11 @@ resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
               }
             },
             {
-              "name" : "Set Job Status",
+              "name" : "Set Pipeline Status",
               "type" : "SetVariable",
               "dependsOn" : [
                 {
-                  "activity" : "Check Job Run API",
+                  "activity" : "Check DLT Pipeline Status",
                   "dependencyConditions" : [
                     "Succeeded"
                   ]
@@ -90,19 +86,19 @@ resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
               },
               "userProperties" : [],
               "typeProperties" : {
-                "variableName" : "JobStatus",
+                "variableName" : "PipelineStatus",
                 "value" : {
-                  "value" : "@if(\nor(\nequals(activity('Check Job Run API').output.state.life_cycle_state, 'PENDING'), equals(activity('Check Job Run API').output.state.life_cycle_state, 'RUNNING')\n),\n'Running',\nactivity('Check Job Run API').output.state.result_state\n)",
+                  "value" : "@if(or(equals(activity('Check DLT Pipeline Status').output.update.state, 'PENDING'), equals(activity('Check DLT Pipeline Status').output.update.state, 'RUNNING')), 'RUNNING', activity('Check DLT Pipeline Status').output.update.state)",
                   "type" : "Expression"
                 }
               }
             },
             {
-              "name" : "Wait to Recheck API",
+              "name" : "Wait to Recheck Pipeline Status",
               "type" : "Wait",
               "dependsOn" : [
                 {
-                  "activity" : "Set Job Status",
+                  "activity" : "Set Pipeline Status",
                   "dependencyConditions" : [
                     "Succeeded"
                   ]
@@ -124,12 +120,13 @@ resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
   )
 
   parameters = {
-    JobID         = "string"
-    Workspace_url = "string"
-    WaitSeconds   = "int"
+    PipelineID     = "string"
+    Workspace_url  = "string"
+    Workspace_token  = "string"
+    WaitSeconds    = "int"
   }
 
   variables = {
-    JobStatus = "Running"
+    PipelineStatus = "RUNNING"
   }
 }

@@ -12,14 +12,14 @@ module "sql-jdbc" {
 }
 
 module "dxt-workflow" {
-  source                      = "./pipelines/dbx-workflow"
-  name                        = local.name
-  data_factory_id             = module.base.data_factory_id
-  workspace_url               = var.workspace_url
-  pipeline_taxi_cdc_name      = module.base.pipeline_taxi_cdc_name
-  pipeline_taxi_snapshot_name = module.base.pipeline_taxi_snapshot_name
-  pipeline_dbx_workflow_name  = module.base.pipeline_dbx_workflow_name
-  depends_on                  = [module.base]
+  source                        = "./pipelines/dbx-workflow"
+  name                          = local.name
+  data_factory_id               = module.base.data_factory_id
+  workspace_url                 = var.workspace_url
+  pipeline_sql_to_adls_pipeline = module.base.pipeline_sql_to_adls_pipeline
+  pipeline_dbx_workflow_name    = module.base.pipeline_dbx_workflow_name
+  workspace_token               = var.workspace_token
+  depends_on                    = [module.base]
 }
 
 module "dbx-dlt" {

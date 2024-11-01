@@ -22,8 +22,3 @@ variable "location" {
   type        = string
   description = "The Azure region where resources will be created"
 }
-
-variable "workspace_token" {
-  type        = string
-  description = "The PAT token used to access to workspace"
-}

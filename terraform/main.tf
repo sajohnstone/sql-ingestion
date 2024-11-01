@@ -10,5 +10,4 @@ module "base" {
   sql_server_password = var.sql_server_password
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
-  workspace_token     = var.workspace_token
 }
