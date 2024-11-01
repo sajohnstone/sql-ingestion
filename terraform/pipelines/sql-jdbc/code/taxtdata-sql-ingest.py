@@ -37,13 +37,8 @@ connection_properties = {
 }
 
 # Read data from SQL Server
-query = f"(SELECT * FROM {table_name}) AS source"  # SQL query to pull data
+query = f"(SELECT * FROM {table_name}) AS source" 
 df = spark.read.jdbc(url=jdbc_url, table=query, properties=connection_properties)
-
-# Show the dataframe
-df.show()
-
-# Write the DataFrame to a Delta table in Databricks
 df.write.format("delta").mode("overwrite").saveAsTable(delta_table_name)
 
 print(f"Data from {table_name} has been written to Delta table {delta_table_name}.")

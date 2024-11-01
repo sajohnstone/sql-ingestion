@@ -12,7 +12,7 @@ resource "databricks_job" "taxidata_sql_snapshot" {
         jdbc_username = var.sql_server_username
         jdbc_password = var.sql_server_password
         table_name = "TaxiData"
-        delta_table_name = "stu_sandbox.bronze.sql_taxi_data"
+        delta_table_name = "stu_sandbox.bronze.taxi_data_snapshot_sql"
       }
     }
   }

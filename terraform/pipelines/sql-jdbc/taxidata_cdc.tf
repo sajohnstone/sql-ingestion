@@ -12,7 +12,7 @@ resource "databricks_job" "taxidata_sql_cdc" {
         jdbc_username    = var.sql_server_username
         jdbc_password    = var.sql_server_password
         table_name       = "dbo_TaxiData_CT"
-        delta_table_name = "stu_sandbox.bronze.sql_cdc_taxi_data"
+        delta_table_name = "stu_sandbox.bronze.taxi_data_cdc_sql"
       }
     }
   }
