@@ -23,7 +23,12 @@ module "dxt-workflow" {
 }
 
 module "dbx-dlt" {
-  source     = "./pipelines/dbx-dlt"
-  name       = local.name
-  depends_on = [module.base]
+  source                        = "./pipelines/dbx-dlt"
+  name                          = local.name
+  data_factory_id               = module.base.data_factory_id
+  workspace_url                 = var.workspace_url
+  pipeline_sql_to_adls_pipeline = module.base.pipeline_sql_to_adls_pipeline
+  pipeline_dbx_dlt_name         = module.base.pipeline_dbx_dlt_name
+  workspace_token               = var.workspace_token
+  depends_on                    = [module.base]
 }

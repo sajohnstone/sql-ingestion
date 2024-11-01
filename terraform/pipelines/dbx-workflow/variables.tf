@@ -3,7 +3,6 @@ variable "name" {
   description = "The prefix used for naming resources"
 }
 
-
 variable "data_factory_id" {
   type        = string
   description = "The id of the ADF instance"

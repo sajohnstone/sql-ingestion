@@ -124,9 +124,10 @@ resource "azurerm_data_factory_pipeline" "databricks_job_pipeline" {
   )
 
   parameters = {
-    JobID         = "string"
-    Workspace_url = "string"
-    WaitSeconds   = "int"
+    JobID           = "string"
+    Workspace_url   = "string"
+    Workspace_token = "string"
+    WaitSeconds     = "int"
   }
 
   variables = {
